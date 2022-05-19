@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <!--
+    log4j보다 약 10배 정도 빠르게 수행되도록 내부가 변경되었으며, 메모리 효율성도 좋아졌다.
+    문서화가 잘 되어 있다.
+    설정 파일을 변경하였을 경우, 서버 재기동 없이 변경 내용이 자동으로 갱신된다.
+    서버 중지 없이 I/O Faliure에 대한 복구를 지원한다.
+    RollingFileAppender를 사용할 경우 자동적으로 오래된 로그를 지워주며 Rolling 백업을 처리한다.
+    -->
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+  <springProfile name="local">
+    <appender name="dailyRollingFileAppender"
+          class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <!-- 경로 알맞게 고칠 것 -->
+        <fileNamePattern>C:\data\demo\log\demo.%d{yyyy-MM-dd}.log</fileNamePattern>
+        <maxHistory>30</maxHistory>
+      </rollingPolicy>
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>DEBUG</level>
+      </filter>
+      <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{35} : %msg %n</pattern>
+      </encoder>
+    </appender>
+  </springProfile>
+
+  <springProfile name="dev">
+    <appender name="dailyRollingFileAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <!-- 경로 알맞게 고칠 것 -->
+        <fileNamePattern>/data/demo/log/demo.%d{yyyy-MM-dd}.log</fileNamePattern>
+        <maxHistory>30</maxHistory>
+      </rollingPolicy>
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>DEBUG</level>
+      </filter>
+      <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{35} : %msg %n</pattern>
+      </encoder>
+    </appender>
+  </springProfile>
+
+  <springProfile name="prod">
+    <appender name="dailyRollingFileAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <!-- 경로 알맞게 고칠 것 -->
+        <fileNamePattern>/svcwas/log/demo.%d{yyyy-MM-dd}.log</fileNamePattern>
+        <maxHistory>30</maxHistory>
+      </rollingPolicy>
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>DEBUG</level>
+      </filter>
+      <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{35} : %msg %n</pattern>
+      </encoder>
+    </appender>
+  </springProfile>
+
+	<logger name="kr.co.demo" level="DEBUG"/>
+
+	<logger name="jdbc.resultset" level="WARN" />
+    <logger name="jdbc.resultsettable" level="WARN" />
+    <logger name="jdbc.audit" level="WARN" />
+    <logger name="jdbc.sqltiming" level="WARN" />
+    <logger name="jdbc.connection" level="WARN" />
+    <logger name="org.mybatis" level="WARN" />
+    <logger name="javax.activation" level="WARN"/>
+    <logger name="javax.xml.bind" level="WARN"/>
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="com.sun" level="WARN"/>
+    <logger name="com.zaxxer" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+    <logger name="org.apache.catalina.startup.DigesterFactory" level="OFF"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.web" level="WARN"/>
+    <logger name="org.springframework.security" level="WARN"/>
+    <logger name="org.springframework.cache" level="WARN"/>
+    <logger name="org.thymeleaf" level="WARN"/>
+    <logger name="org.xnio" level="WARN"/>
+    <logger name="sun.rmi" level="WARN"/>
+    <logger name="sun.rmi.transport" level="WARN"/>
+
+	<root level="info">
+		<appender-ref ref="CONSOLE"/>
+        <appender-ref ref="dailyRollingFileAppender"/>
+	</root>
+
+</configuration>

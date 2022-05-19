@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.demo.core.repository.BoardRepository">
+  <resultMap id="boardRepository" type="kr.co.demo.core.domain.Board" >
+    <id	    property="idx"		       column="BOARD_IDX" />
+    <result property="divisionCode"	 column="BOARD_DIVISION_CODE" />
+    <result property="title"			   column="BOARD_TITLE" />
+    <result property="topYn"			   column="BOARD_TOP_YN" />
+    <result property="content"		   column="BOARD_CONTENT" />
+    <result property="url"		       column="BOARD_URL" />
+    <result property="attach"		     column="BOARD_ATTACH" />
+    <result property="views"		     column="BOARD_VIEWS" />
+    <result property="useYn"		     column="BOARD_USE_YN" />
+    <result property="delYn"		     column="BOARD_DEL_YN" />
+    <result property="createdBy"		 column="BOARD_CREATED_BY" />
+    <result property="createdDate"	 column="BOARD_CREATED_DATE" />
+    <result property="modifiedBy"		 column="BOARD_MODIFIED_BY" />
+    <result property="modifiedDate"	 column="BOARD_MODIFIED_DATE" />
+    <result property="ip"		         column="BOARD_IP" />
+  </resultMap>
+
+  <sql id="boardCondition">
+    <where>
+      BOARD_DEL_YN = 'N'
+      <if test="searchInfo != null">
+				<foreach collection="searchInfo.entrySet()" index="key" item="entry">
+					<if test="entry != null and entry != ''">
+						<choose>
+							<when test="key == 'search'">
+								<choose>
+									<when test="entry == 'all' and searchValue != ''">
+										AND
+										(
+												BOARD_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+											OR
+												BOARD_CONTENT LIKE CONCAT('%', #{searchValue}, '%')
+										)
+									</when>
+									<when test="entry == 'title'">
+										AND BOARD_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+									</when>
+									<when test="entry == 'content'">
+										AND BOARD_CONTENT LIKE CONCAT('%', #{searchValue}, '%')
+									</when>
+								</choose>
+							</when>
+						</choose>
+					</if>
+				</foreach>
+			</if>
+			<if test="idx != null and idx != ''">
+        AND b.BOARD_IDX = #{idx}
+      </if>
+      <if test="divisionCode != null and divisionCode != ''">
+        AND BOARD_DIVISION_CODE = #{divisionCode}
+      </if>
+    </where>
+  </sql>
+
+  <select id="selectBoardCount" resultType="int">
+    /* BoardRepository.selectBoardCount */
+    SELECT COUNT(*) CNT
+      FROM SNPS_BOARD b
+    <include refid="boardCondition" />
+  </select>
+
+  <select id="selectBoardList" resultMap="boardRepository" >
+    /* BoardRepository.selectBoardList */
+    SELECT b.BOARD_IDX,
+           b.BOARD_TITLE,
+           b.BOARD_URL,
+           b.BOARD_ATTACH,
+           b.BOARD_CREATED_DATE
+      FROM SNPS_BOARD b
+    <include refid="boardCondition" />
+    <include refid="Common.sort"/>
+    <include refid="Common.pagingFooter-mysql"/>
+  </select>
+
+  <select id="selectBoard" resultMap="boardRepository" >
+    /* BoardRepository.selectBoard */
+    SELECT b.BOARD_IDX,
+           b.BOARD_TITLE,
+           b.BOARD_URL,
+           b.BOARD_ATTACH,
+           b.BOARD_CREATED_DATE
+      FROM SNPS_BOARD b
+    <include refid="boardCondition" />
+  </select>
+
+  <insert id="insertBoard" useGeneratedKeys="true" keyProperty="idx">
+    /* BoardRepository.insertBoard */
+    INSERT INTO SNPS_BOARD (
+           BOARD_DIVISION_CODE,
+           BOARD_TITLE,
+           BOARD_TOP_YN,
+           BOARD_CONTENT,
+           BOARD_URL,
+           BOARD_ATTACH,
+           BOARD_VIEWS,
+           BOARD_USE_YN,
+           BOARD_DEL_YN,
+           BOARD_CREATED_BY,
+           BOARD_CREATED_DATE,
+           BOARD_IP
+    ) VALUES (
+           #{divisionCode},
+           #{title},
+           #{topYn},
+           #{content},
+           #{url},
+           #{attach},
+           #{views},
+           'Y',
+           'N',
+           #{createdBy},
+           #{current.dt},
+           #{current.ip}
+    )
+  </insert>
+
+    <update id="updateBoard" useGeneratedKeys="true" keyProperty="idx">
+      /* BoardRepository.updateBoard */
+      UPDATE SNPS_BOARD
+         SET BOARD_TITLE             = #{title},
+             BOARD_TOP_YN            = #{topYn},
+             BOARD_CONTENT           = #{content},
+             BOARD_URL               = #{url},
+             BOARD_ATTACH            = #{attach},
+             BOARD_MODIFIED_BY       = #{modifiedBy},
+             BOARD_MODIFIED_DATE     = #{current.dt},
+             BOARD_IP                = #{current.ip}
+       WHERE BOARD_IDX 				       = #{idx}
+         AND BOARD_DIVISION_CODE     = #{divisionCode}
+    </update>
+
+    <update id="deleteBoard" useGeneratedKeys="true" keyProperty="idx">
+      /* BoardRepository.deleteBoard */
+      UPDATE SNPS_BOARD
+         SET BOARD_DEL_YN            = 'Y',
+             BOARD_MODIFIED_BY       = #{modifiedBy},
+             BOARD_MODIFIED_DATE     = #{current.dt},
+             BOARD_IP                = #{current.ip}
+       WHERE BOARD_IDX 				       = #{idx}
+         AND BOARD_DIVISION_CODE     = #{divisionCode}
+	</update>
+
+</mapper>

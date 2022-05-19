@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.demo.core.repository.UserRepository">
+  <resultMap id="simpleUserResult" type="kr.co.demo.core.domain.User" >
+    <id	    property="idx"					column="USER_IDX" />
+    <result property="userRole"		  column="USER_ROLE" />
+    <result property="center"		    column="USER_CENTER" />
+    <result property="branch"		    column="USER_BRANCH" />
+    <result property="cspCode"		  column="USER_CSP_CODE" />
+    <result property="code"		      column="USER_CODE" />
+    <result property="name"			  	column="USER_NAME" />
+    <result property="createdBy"		column="USER_CREATED_BY" />
+    <result property="createdDt"		column="USER_CREATED_DATE" />
+    <result property="modifiedBy"		column="USER_MODIFIED_BY" />
+    <result property="modifiedDt"		column="USER_MODIFIED_DATE" />
+  </resultMap>
+
+  <sql id="userCondition">
+    <where>
+      <if test="searchInfo != null">
+        <foreach collection="searchInfo.entrySet()" index="key" item="entry">
+          <if test="entry != null and entry != ''">
+            <choose>
+              <when test="key == 'search'">
+
+              </when>
+            </choose>
+          </if>
+        </foreach>
+      </if>
+    </where>
+  </sql>
+
+  <insert id="insertUser">
+    INSERT INTO SNPS_USER (
+            USER_IDX,
+            USER_ROLE,
+            USER_CENTER,
+            USER_BRANCH,
+            USER_CSP_CODE,
+            USER_NAME,
+            USER_CREATED_BY,
+            USER_CREATED_DATE,
+            USER_IP
+    ) VALUES (
+            #{idx},
+            #{userRole},
+            #{center},
+            #{branch},
+            #{cspCode},
+            #{name},
+            #{current.loginId},
+            #{current.dt},
+            #{current.ip}
+    )
+  </insert>
+
+  <select id="selectUserCount" resultType="int">
+    SELECT COUNT(*) CNT FROM SNPS_USER
+    <include refid="userCondition" />
+  </select>
+
+  <select id="selectUserList" resultMap="simpleUserResult" >
+    SELECT USER_IDX,
+           USER_ROLE,
+           USER_CENTER,
+           USER_BRANCH,
+           USER_CSP_CODE,
+           USER_NAME,
+           USER_CREATED_BY,
+           USER_CREATED_DATE
+      FROM SNPS_USER
+    <include refid="userCondition" />
+    <include refid="Common.sort"/>
+    <include refid="Common.pagingFooter-mysql"/>
+  </select>
+
+  <select id="selectUser" resultMap="simpleUserResult" >
+    SELECT USER_IDX,
+           USER_ROLE,
+           USER_CENTER,
+           USER_BRANCH,
+           USER_CSP_CODE,
+           USER_CODE,
+           USER_NAME,
+           USER_CREATED_BY,
+           USER_CREATED_DATE
+      FROM SNPS_USER
+     WHERE USER_CSP_CODE = #{cspCode}
+  </select>
+
+  <update id="updateUserCode">
+    UPDATE SNPS_USER
+       SET USER_CODE            = #{code},
+           USER_MODIFIED_BY     = #{current.loginId},
+           USER_MODIFIED_DATE   = #{current.dt},
+           USER_IP              = #{current.ip}
+     WHERE USER_CSP_CODE        = #{cspCode}
+  </update>
+
+  <update id="updateUser">
+    UPDATE SNPS_USER
+       SET USER_NAME            = #{name},
+           USER_MODIFIED_BY     = #{current.loginId},
+           USER_MODIFIED_DATE   = #{current.dt},
+           USER_IP              = #{current.ip}
+     WHERE USER_IDX             = #{idx}
+  </update>
+
+  <insert id="insertUserLog">
+    INSERT INTO SNPS_USER_LOG (
+           USER_LOG_IDX,
+           USER_CSP_CODE,
+           USER_LOG_CREATED_DATE,
+           USER_LOG_IP
+    ) VALUES (
+           #{idx},
+           #{cspCode},
+           #{current.dt},
+           #{current.ip}
+    )
+  </insert>
+</mapper>
